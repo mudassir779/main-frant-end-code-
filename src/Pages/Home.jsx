@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { useEffect } from "react";
-import { VapiWidget } from '@vapi-ai/client-sdk-react';  // New import
+
 
 const Home = () => {
   const backendLink = useSelector((state) => state.prod.link);
@@ -1070,30 +1070,7 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Vapi AI Voice Widget - Now using React component */}
-      <VapiWidget
-        publicKey="d0d366c1-8659-4768-aeb4-fc157b5c094d"
-        assistantId="314afa30-4935-47b9-a1d7-c58df6d8bddd"
-        mode="voice"
-        theme="dark"
-        baseBgColor="#000000"
-        accentColor="#4db814" 
-        ctaButtonColor="#000000"
-        ctaButtonTextColor="#ffffff"
-        borderRadius="large" 
-        size="compact"
-        position="bottom-right"
-        title="Tree Information" 
-        startButtonText="Start"
-        endButtonText="End Call"
-        chatFirstMessage="Hey, How can I help you today?"
-        chatPlaceholder="Type your message..."
-        voiceShowTranscript={true}
-        consentRequired={true}
-        consentTitle="Terms and conditions"
-        consentContent='By clicking "Agree," and each time I interact with this AI agent, I consent to the recording, storage, and sharing of my communications with third-party service providers, and as otherwise described in our Terms of Service.'
-        consentStorageKey="vapi_widget_consent"
-      />
+
     </>
   );
 };
