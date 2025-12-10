@@ -11,9 +11,16 @@ export default defineConfig({
   server: {
     port: 8000,
     host: '0.0.0.0',
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        secure: false,
+      }
+    },
     allowedHosts: [
       'americantreesexpert.com',
-      '.americantreesexpert.com'  // subdomain ke liye
+      '.americantreesexpert.com'
     ]
   }
 })
