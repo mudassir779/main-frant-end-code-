@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Phone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useSelector } from "react-redux";
@@ -1033,13 +1033,13 @@ const Home = () => {
                   {/* Phone */}
                   <a
                     href="tel:+812-457-3433"
-                    className="flex items-center bg-[#b0b694] rounded-sm overflow-hidden"
+                    className="flex items-center bg-[#b0b694] rounded-sm overflow-hidden hover:bg-[#9ca080] transition-colors duration-200"
                   >
-                    <div className="bg-green-900 w-12 h-12 flex items-center justify-center">
-                      <img
-                        src="/phone-w.png"
-                        alt="Phone Icon"
-                        className="w-5 h-5"
+                    <div className="bg-green-900 w-14 h-14 flex items-center justify-center flex-shrink-0 shadow-md border-2 border-green-700">
+                      <Phone 
+                        className="w-6 h-6 text-white" 
+                        strokeWidth={2.5}
+                        fill="currentColor"
                       />
                     </div>
                     <span className="text-white text-[15px] font-bold ml-3">

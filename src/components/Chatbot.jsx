@@ -22,6 +22,8 @@ const Chatbot = () => {
 
   // Vapi State
   const [isCallActive, setIsCallActive] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [showRipple, setShowRipple] = useState(false);
   const vapiRef = useRef(null);
 
   const [showContactForm, setShowContactForm] = useState(false);
@@ -81,10 +83,17 @@ const Chatbot = () => {
 
   const toggleCall = () => {
     if (vapiRef.current) {
+      // Trigger ripple effect
+      setShowRipple(true);
+      setTimeout(() => setShowRipple(false), 600);
+
       if (isCallActive) {
         vapiRef.current.stop();
       } else {
+        setIsConnecting(true);
         vapiRef.current.start('1db96221-98c5-4ef3-a4c7-f60c999a4883');
+        // Remove connecting state after 2 seconds (or when call actually starts)
+        setTimeout(() => setIsConnecting(false), 2000);
       }
     }
   };
@@ -395,8 +404,34 @@ const Chatbot = () => {
           0% { transform: scale(0.8); opacity: 0.5; }
           100% { transform: scale(2); opacity: 0; }
         }
+        @keyframes ripple {
+          0% { transform: scale(0); opacity: 1; }
+          100% { transform: scale(2.5); opacity: 0; }
+        }
+        @keyframes shake {
+          0%, 100% { transform: rotate(0deg); }
+          25% { transform: rotate(-10deg); }
+          75% { transform: rotate(10deg); }
+        }
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-5px); }
+        }
+        @keyframes glow-pulse {
+          0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
+          50% { box-shadow: 0 0 30px rgba(59, 130, 246, 0.8); }
+        }
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
         .animate-float { animation: float 3s ease-in-out infinite; }
         .animate-slide-up { animation: slideUp 0.3s ease-out forwards; }
+        .animate-ripple { animation: ripple 0.6s ease-out; }
+        .animate-shake { animation: shake 0.5s ease-in-out; }
+        .animate-bounce { animation: bounce 0.6s ease-in-out infinite; }
+        .animate-glow-pulse { animation: glow-pulse 2s ease-in-out infinite; }
+        .animate-spin { animation: spin 1s linear infinite; }
         .glass-panel {
           background: rgba(255, 255, 255, 0.98);
           backdrop-filter: blur(12px);
@@ -467,14 +502,66 @@ const Chatbot = () => {
               </div>
             </div>
 
-            <div className="flex items-center gap-1 relative z-10">
-              {/* Call Button */}
+            <div className="flex items-center gap-2 relative z-10">
+              {/* Premium Voice Call Button with All Effects */}
               <button
                 onClick={toggleCall}
-                className={`p-2 rounded-full transition-all duration-300 ${isCallActive ? 'bg-red-500 text-white animate-pulse' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
-                title={isCallActive ? "End Call" : "Start Voice Call"}
+                disabled={isConnecting}
+                className={`group relative px-4 py-2 rounded-full transition-all duration-300 transform overflow-hidden ${isConnecting
+                    ? 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-lg shadow-yellow-500/50 cursor-wait'
+                    : isCallActive
+                      ? 'bg-gradient-to-r from-red-500 via-red-600 to-pink-600 text-white shadow-xl shadow-red-500/60 hover:shadow-2xl hover:shadow-red-500/70 hover:scale-110 active:scale-95'
+                      : 'bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 text-white shadow-xl shadow-blue-500/50 hover:shadow-2xl hover:shadow-blue-600/70 hover:scale-110 hover:from-blue-600 hover:via-blue-700 hover:to-indigo-700 active:scale-95 animate-glow-pulse'
+                  } disabled:opacity-70 disabled:cursor-not-allowed`}
+                title={isConnecting ? "Connecting..." : isCallActive ? "End Voice Call" : "Start Voice Call"}
               >
-                <Phone size={18} className={isCallActive ? "fill-current" : ""} />
+                {/* Ripple Effect on Click */}
+                {showRipple && (
+                  <span className="absolute inset-0 rounded-full bg-white/30 animate-ripple"></span>
+                )}
+
+                {/* Pulse Ring Animation for Active Call */}
+                {isCallActive && (
+                  <>
+                    <span className="absolute inset-0 rounded-full animate-ping bg-red-400 opacity-75"></span>
+                    <span className="absolute inset-0 rounded-full animate-pulse bg-red-300 opacity-50"></span>
+                  </>
+                )}
+
+                {/* Attention Pulse for Idle State */}
+                {!isCallActive && !isConnecting && (
+                  <span className="absolute -inset-1 rounded-full bg-gradient-to-r from-blue-400 to-indigo-400 opacity-20 blur-sm animate-pulse"></span>
+                )}
+
+                <div className="relative flex items-center gap-2 z-10">
+                  {/* Loading Spinner */}
+                  {isConnecting ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <Phone
+                      size={18}
+                      className={`${isCallActive
+                          ? 'animate-shake fill-current'
+                          : 'group-hover:animate-bounce'
+                        } transition-all duration-300 drop-shadow-lg`}
+                    />
+                  )}
+
+                  <span className="text-xs font-bold tracking-wide uppercase drop-shadow-md">
+                    {isConnecting ? 'Connecting...' : isCallActive ? 'End Call' : 'Voice Call'}
+                  </span>
+                </div>
+
+                {/* Enhanced Glow Effect */}
+                <div className={`absolute inset-0 rounded-full blur-lg transition-all duration-300 ${isConnecting
+                    ? 'bg-yellow-400/50'
+                    : isCallActive
+                      ? 'bg-red-400/60 group-hover:bg-red-400/80'
+                      : 'bg-blue-400/40 group-hover:bg-blue-500/60'
+                  }`}></div>
+
+                {/* Gradient Border Glow */}
+                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </button>
 
               <button
