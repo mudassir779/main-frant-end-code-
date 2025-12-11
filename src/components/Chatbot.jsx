@@ -4,6 +4,7 @@ import {
   Paperclip, MapPin, Phone, Star, Clock, Volume2, VolumeX,
   Image as ImageIcon, Loader
 } from 'lucide-react';
+import Vapi from '@vapi-ai/web';
 import { sendTreeAnalysisEmail } from '../utils/emailService';
 
 // Sound effect for new messages (subtle pop)
@@ -19,6 +20,10 @@ const Chatbot = () => {
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
 
+  // Vapi State
+  const [isCallActive, setIsCallActive] = useState(false);
+  const vapiRef = useRef(null);
+
   const [showContactForm, setShowContactForm] = useState(false);
   const [contactForm, setContactForm] = useState({ name: '', email: '', phone: '' });
   const [isSendingEmail, setIsSendingEmail] = useState(false);
@@ -30,6 +35,58 @@ const Chatbot = () => {
     const day = now.getDay();
     // Mon-Fri, 8am-6pm
     return day >= 1 && day <= 5 && hour >= 8 && hour < 18;
+  };
+
+  // Initialize Vapi
+  useEffect(() => {
+    try {
+      const vapi = new Vapi('7649bce6-4568-49ed-bd41-b8665a5a583a');
+      vapiRef.current = vapi;
+
+      vapi.on('call-start', () => {
+        setIsCallActive(true);
+        setMessages(prev => [...prev, {
+          id: Date.now(),
+          text: "Voice call started. Listening...",
+          sender: 'bot',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }]);
+      });
+
+      vapi.on('call-end', () => {
+        setIsCallActive(false);
+        setMessages(prev => [...prev, {
+          id: Date.now(),
+          text: "Voice call ended.",
+          sender: 'bot',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }]);
+      });
+
+      vapi.on('error', (e) => {
+        console.error("Vapi Error:", e);
+        setIsCallActive(false);
+      });
+
+    } catch (error) {
+      console.error("Failed to initialize Vapi:", error);
+    }
+
+    return () => {
+      if (vapiRef.current) {
+        vapiRef.current.stop();
+      }
+    };
+  }, []);
+
+  const toggleCall = () => {
+    if (vapiRef.current) {
+      if (isCallActive) {
+        vapiRef.current.stop();
+      } else {
+        vapiRef.current.start('1db96221-98c5-4ef3-a4c7-f60c999a4883');
+      }
+    }
   };
 
   // Initial Welcome Message
@@ -325,7 +382,7 @@ const Chatbot = () => {
 
   return (
     <div className="fixed bottom-6 right-6 z-50 font-sans">
-      <style jsx>{`
+      <style>{`
         @keyframes float {
           0%, 100% { transform: translateY(0px); }
           50% { transform: translateY(-5px); }
@@ -411,6 +468,15 @@ const Chatbot = () => {
             </div>
 
             <div className="flex items-center gap-1 relative z-10">
+              {/* Call Button */}
+              <button
+                onClick={toggleCall}
+                className={`p-2 rounded-full transition-all duration-300 ${isCallActive ? 'bg-red-500 text-white animate-pulse' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
+                title={isCallActive ? "End Call" : "Start Voice Call"}
+              >
+                <Phone size={18} className={isCallActive ? "fill-current" : ""} />
+              </button>
+
               <button
                 onClick={() => setSoundEnabled(!soundEnabled)}
                 className="text-white/70 hover:text-white hover:bg-white/10 p-2 rounded-full transition-all"
